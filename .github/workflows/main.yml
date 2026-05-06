@@ -1,4 +1,4 @@
-name: AI DevOps CI/CD Demo
+name: AI DevOps CI/CD Demo using github actions
 
 on:
   push:

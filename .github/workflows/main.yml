@@ -1,0 +1,53 @@
+name: AI DevOps CI/CD
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Create Virtual Environment
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: AI Test Generation
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        source venv/bin/activate
+        python generate_tests.py
+
+    - name: Run Tests
+      run: |
+        source venv/bin/activate
+        pytest
+
+    - name: Build Docker Image
+      run: |
+        docker build -t ai-devops-advanced .
+
+  
+    - name: AI Log Analysis (on failure)
+      if: failure()
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        echo "Analyzing failure..."
+        LOG=$(tail -n 50 $GITHUB_STEP_SUMMARY || echo "No logs")
+        source venv/bin/activate
+        python analyze_logs.py "$LOG"

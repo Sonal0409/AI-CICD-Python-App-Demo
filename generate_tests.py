@@ -38,30 +38,30 @@ try:
     tests = response.choices[0].message.content.strip()
 
 except Exception as e:
-    print("❌ AI request failed:", e)
+    print("AI request failed:", e)
     tests = ""
 
-# 🔥 Step 1: Remove markdown if AI adds it
+# Step 1: Remove markdown if AI adds it
 if "```" in tests:
     tests = tests.replace("```python", "").replace("```", "").strip()
 
-# 🔥 Step 2: Fix common wrong imports
+# Step 2: Fix common wrong imports
 tests = tests.replace("from your_flask_app import app", "from app import app")
 tests = tests.replace("from main import app", "from app import app")
 tests = tests.replace("flask_app", "app")
 
-# 🔥 Step 3: Ensure correct import exists
+# Step 3: Ensure correct import exists
 if "from app import app" not in tests:
-    print("⚠️ Fixing missing import...")
+    print("Fixing missing import...")
     tests = "from app import app\n\n" + tests
 
-# 🔥 Step 4: Validate Python syntax
+# Step 4: Validate Python syntax
 try:
     ast.parse(tests)
-    print("✅ AI generated valid Python tests")
+    print("AI generated valid Python tests")
 
 except SyntaxError:
-    print("❌ Invalid AI output. Using fallback test.")
+    print("Invalid AI output. Using fallback test.")
 
     tests = """
 from app import app
@@ -72,9 +72,9 @@ def test_home():
     assert response.status_code == 200
 """
 
-# 🔥 Step 5: Final safety check (must contain test function)
+# Step 5: Final safety check (must contain test function)
 if "def test_" not in tests:
-    print("⚠️ No test function found. Using fallback.")
+    print("No test function found. Using fallback.")
 
     tests = """
 from app import app
